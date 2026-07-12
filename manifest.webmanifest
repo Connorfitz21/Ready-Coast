@@ -1,7 +1,7 @@
 {
-  "name": "Ready Coast Preparedness Planner",
+  "name": "Ready Coast Preparedness Command Center",
   "short_name": "Ready Coast",
-  "description": "Private, offline-capable household emergency planning.",
+  "description": "Private, offline-capable emergency preparedness planning.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f4f3ec",

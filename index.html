@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#12372a">
+  <meta name="description" content="A private, offline-capable emergency preparedness planner using trusted public resources.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>Ready Coast</title>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <img src="icon.svg" alt="" class="brand-icon">
+    <div><strong>Ready Coast</strong><span>Preparedness planner</span></div>
+  </div>
+  <button class="icon-button" id="installBtn" hidden>Install</button>
+</header>
+
+<nav class="tabs" aria-label="Primary navigation">
+  <button data-view="home" class="active">Home</button>
+  <button data-view="kit">My Kit</button>
+  <button data-view="plan">Plan</button>
+  <button data-view="alerts">Alerts</button>
+  <button data-view="resources">Resources</button>
+</nav>
+
+<main>
+<section id="home" class="view active">
+  <div class="hero">
+    <p class="eyebrow">PRIVATE • FREE • OFFLINE-CAPABLE</p>
+    <h1>Know what you have.<br>Know what you need.</h1>
+    <p>Build a household emergency plan, track supplies, calculate essentials, and check official alerts.</p>
+    <button class="primary" data-jump="kit">Start your kit</button>
+  </div>
+
+  <div class="grid stats">
+    <article class="card">
+      <span class="label">Kit completion</span>
+      <strong id="completionValue">0%</strong>
+      <div class="progress"><i id="completionBar"></i></div>
+    </article>
+    <article class="card">
+      <span class="label">Water target</span>
+      <strong id="waterSummary">21 gallons</strong>
+      <small>Default: 1 person, 7 days</small>
+    </article>
+  </div>
+
+  <article class="card">
+    <div class="card-heading">
+      <div><span class="label">Quick calculator</span><h2>Household essentials</h2></div>
+    </div>
+    <div class="form-grid">
+      <label>People<input id="people" type="number" min="1" max="30" value="1"></label>
+      <label>Pets<input id="pets" type="number" min="0" max="20" value="0"></label>
+      <label>Days<input id="days" type="number" min="3" max="30" value="7"></label>
+    </div>
+    <div class="calc-results">
+      <div><span>Water</span><b id="waterResult">7 gal</b></div>
+      <div><span>Meals</span><b id="mealResult">21</b></div>
+      <div><span>Pet water</span><b id="petWaterResult">0 gal</b></div>
+    </div>
+    <p class="fineprint">Planning estimate only. Adjust for climate, health, age, activity, and official local guidance.</p>
+  </article>
+
+  <article class="card">
+    <span class="label">Next best actions</span>
+    <div id="nextActions" class="action-list"></div>
+  </article>
+</section>
+
+<section id="kit" class="view">
+  <div class="section-title"><p class="eyebrow">CHECKLIST</p><h1>My emergency kit</h1><p>Check items as you obtain them. Everything stays in this browser.</p></div>
+  <div class="toolbar">
+    <select id="kitFilter" aria-label="Filter kit">
+      <option value="all">All items</option>
+      <option value="needed">Still needed</option>
+      <option value="done">Completed</option>
+    </select>
+    <button id="addItemBtn" class="secondary">+ Custom item</button>
+  </div>
+  <div id="kitList"></div>
+</section>
+
+<section id="plan" class="view">
+  <div class="section-title"><p class="eyebrow">HOUSEHOLD PLAN</p><h1>Critical information</h1><p>Save only information you are comfortable storing on this device.</p></div>
+  <form id="planForm" class="card plan-form">
+    <label>Household / family name<input name="household" placeholder="Example: Taylor household"></label>
+    <label>Home meeting location<input name="meetingHome" placeholder="Across the street or nearby"></label>
+    <label>Area meeting location<input name="meetingArea" placeholder="Outside your neighborhood"></label>
+    <label>Out-of-area contact<input name="contact" placeholder="Name and phone number"></label>
+    <label>Evacuation destination<input name="destination" placeholder="Primary destination"></label>
+    <label>Important notes<textarea name="notes" rows="5" placeholder="Medical needs, pet arrangements, utility shutoffs, routes..."></textarea></label>
+    <div class="button-row">
+      <button class="primary" type="submit">Save plan</button>
+      <button class="secondary" type="button" id="exportBtn">Export backup</button>
+      <label class="secondary file-label">Import backup<input id="importInput" type="file" accept=".json,application/json"></label>
+    </div>
+    <p id="saveStatus" class="status" role="status"></p>
+  </form>
+</section>
+
+<section id="alerts" class="view">
+  <div class="section-title"><p class="eyebrow">OFFICIAL DATA</p><h1>Active weather alerts</h1><p>Uses your approximate device location to request active National Weather Service alerts.</p></div>
+  <article class="card">
+    <button id="locationBtn" class="primary">Use my location</button>
+    <p class="fineprint">Location is sent directly to the National Weather Service API for this request. Ready Coast does not retain it.</p>
+  </article>
+  <div id="alertStatus" class="status"></div>
+  <div id="alertList"></div>
+</section>
+
+<section id="resources" class="view">
+  <div class="section-title"><p class="eyebrow">TRUSTED SOURCES</p><h1>Official resources</h1><p>Direct links to agencies that maintain the underlying emergency information.</p></div>
+  <div class="resource-grid">
+    <a class="resource card" href="https://www.ready.gov/" target="_blank" rel="noopener"><span>FEMA</span><h2>Ready.gov</h2><p>Emergency plans, kits, and hazard guidance.</p></a>
+    <a class="resource card" href="https://www.weather.gov/" target="_blank" rel="noopener"><span>NOAA / NWS</span><h2>Weather.gov</h2><p>Forecasts, watches, warnings, and advisories.</p></a>
+    <a class="resource card" href="https://www.nhc.noaa.gov/" target="_blank" rel="noopener"><span>NOAA</span><h2>National Hurricane Center</h2><p>Official tropical cyclone forecasts and products.</p></a>
+    <a class="resource card" href="https://earthquake.usgs.gov/earthquakes/map/" target="_blank" rel="noopener"><span>USGS</span><h2>Latest earthquakes</h2><p>Current earthquake map and event information.</p></a>
+    <a class="resource card" href="https://www.redcross.org/get-help/how-to-prepare-for-emergencies.html" target="_blank" rel="noopener"><span>RED CROSS</span><h2>Emergency guidance</h2><p>Preparedness and response information by hazard.</p></a>
+  </div>
+  <article class="card disclaimer"><h2>Safety notice</h2><p>This organizer is not an emergency warning system or a substitute for instructions from public safety officials. Call 911 for immediate threats to life or property.</p></article>
+</section>
+</main>
+
+<dialog id="itemDialog">
+  <form method="dialog" id="itemForm">
+    <h2>Add a custom item</h2>
+    <label>Item name<input id="customName" required maxlength="80"></label>
+    <label>Category<select id="customCategory"><option>Water & Food</option><option>Safety & Medical</option><option>Power & Communication</option><option>Documents & Cash</option><option>Clothing & Shelter</option><option>Pets</option><option>Other</option></select></label>
+    <div class="button-row"><button value="cancel" class="secondary">Cancel</button><button value="default" class="primary">Add item</button></div>
+  </form>
+</dialog>
+
+<footer>Ready Coast stores your checklist and plan locally on your device.</footer>
+<script src="app.js"></script>
+</body>
+</html>

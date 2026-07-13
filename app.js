@@ -1,3 +1,4 @@
+console.log("Ready Coast V3 loaded");
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const KEY="readyCoastV2";
 const CATS=["Water & Food","Medical & Safety","Power & Communication","Shelter & Clothing","Documents & Cash","Sanitation","Pets","Tools","Other"];

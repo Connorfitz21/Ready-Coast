@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 220" role="img" aria-labelledby="title">
+<title>Ready Coast Prep wordmark</title>
+<rect width="980" height="220" fill="none"/>
+<g transform="translate(10 5) scale(.4)">
+  <path d="M256 28 430 94v136c0 116-68 204-174 254C150 434 82 346 82 230V94Z" fill="#07192b" stroke="#f4f7fb" stroke-width="18" stroke-linejoin="round"/>
+  <path d="M127 157 227 178v-38L127 117Z" fill="#f6b92f"/><path d="M385 157 285 178v-38l100-23Z" fill="#f6b92f"/>
+  <path d="M220 150h72l-8 51h-56Z" fill="#f4f7fb"/><path d="M239 109h34l18 24h-70Z" fill="#f4f7fb"/>
+  <rect x="232" y="158" width="48" height="31" rx="4" fill="#07192b"/><path d="M229 201h54l26 168H203Z" fill="#f4f7fb"/>
+  <path d="M247 214h18v132h-18Z" fill="#d8e1eb"/>
+  <path d="M159 366c32-34 68-38 101-9 27 24 55 28 94-2-17 49-52 80-98 102-45-21-78-51-97-91Z" fill="#2395e8"/>
+  <path d="M147 389c37-26 75-24 110 5 34 29 67 29 107 3-21 42-55 69-108 92-47-21-83-48-109-100Z" fill="#0d75c7"/>
+</g>
+<text x="230" y="102" fill="#f4f7fb" font-family="Arial Black, Impact, sans-serif" font-size="68" letter-spacing="3">READY COAST</text>
+<line x1="230" y1="127" x2="420" y2="127" stroke="#2395e8" stroke-width="7"/>
+<line x1="714" y1="127" x2="925" y2="127" stroke="#2395e8" stroke-width="7"/>
+<text x="442" y="151" fill="#2395e8" font-family="Arial Black, Impact, sans-serif" font-size="48" letter-spacing="18">PREP</text>
+<text x="230" y="198" fill="#a8b5c4" font-family="Arial, sans-serif" font-size="20" letter-spacing="8">PLAN. PREPARE. PROTECT.</text>
+</svg>

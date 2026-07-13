@@ -1,4 +1,4 @@
-# Ready Coast v2
+# Ready Coast Prep V4
 
 Expanded preparedness command center with:
 
@@ -36,3 +36,29 @@ Open `http://localhost:8000`.
 ## Privacy
 
 Data is stored in browser localStorage. Ready Coast does not create user accounts or send household data to a server. Location is sent only to the National Weather Service when the user requests active alerts.
+
+
+## If the old version still appears
+
+The original app used offline caching. After uploading V3:
+
+1. Open the site.
+2. Press Ctrl+Shift+R on Windows or Command+Shift+R on Mac.
+3. If needed, open browser settings for the site and clear stored data.
+4. On a phone, remove the installed app icon, reopen the site in the browser, and install it again.
+
+The V3 header displays a visible `V3` badge, so you can immediately confirm the update loaded.
+
+
+## V4 branding update
+
+This build applies the production lighthouse shield logo and the new Ready Coast Prep visual system directly to the website:
+
+- Dark navy navigation and hero section
+- Electric blue controls and progress indicators
+- Gold lighthouse-beam accents
+- White and light-gray content surfaces
+- New shield favicon and full wordmark
+- Cache version updated to V4
+
+After uploading the files, use Ctrl+Shift+R. On an installed phone version, remove and reinstall the app if the previous theme remains cached.

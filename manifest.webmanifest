@@ -1,11 +1,11 @@
 {
-  "name": "Ready Coast Preparedness Command Center",
+  "name": "Ready Coast Prep",
   "short_name": "Ready Coast",
   "description": "Private, offline-capable emergency preparedness planning.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#f4f3ec",
-  "theme_color": "#12372a",
+  "background_color": "#07192b",
+  "theme_color": "#07192b",
   "icons": [
     {
       "src": "icon-192.png",

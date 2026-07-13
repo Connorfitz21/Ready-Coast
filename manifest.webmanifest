@@ -4,8 +4,8 @@
   "description": "Private, offline-capable emergency preparedness planning.",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#07192b",
-  "theme_color": "#07192b",
+  "background_color": "#061525",
+  "theme_color": "#061525",
   "icons": [
     {
       "src": "icon-192.png",

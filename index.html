@@ -3,17 +3,33 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#12372a">
+<meta name="theme-color" content="#061525">
 <meta name="description" content="Ready Coast is a private, offline-capable emergency preparedness planner.">
-<link rel="manifest" href="manifest.webmanifest?v=4">
+<link rel="manifest" href="manifest.webmanifest?v=5">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link rel="stylesheet" href="styles.css?v=4">
-<title>Ready Coast</title>
+<link rel="stylesheet" href="styles.css?v=5">
+<title>Ready Coast Prep</title>
 </head>
 <body>
 <header class="topbar">
-  <div class="brand"><img src="logo-wordmark.svg?v=4" alt="Ready Coast Prep"></div>
+  <div class="brand">
+<svg class="brand-shield" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true">
+<defs><linearGradient id="rcWave" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#39a9ff"/><stop offset="1" stop-color="#0866b2"/></linearGradient></defs>
+<path d="M256 28 430 94v136c0 116-68 204-174 254C150 434 82 346 82 230V94Z" fill="#061525" stroke="#f5f8fb" stroke-width="18" stroke-linejoin="round"/>
+<path d="M127 157 227 178v-38L127 117Z" fill="#f7b92f"/><path d="M385 157 285 178v-38l100-23Z" fill="#f7b92f"/>
+<path d="M220 150h72l-8 51h-56Z" fill="#f5f8fb"/><path d="M239 109h34l18 24h-70Z" fill="#f5f8fb"/>
+<rect x="232" y="158" width="48" height="31" rx="4" fill="#061525"/><path d="M229 201h54l26 168H203Z" fill="#f5f8fb"/>
+<path d="M247 214h18v132h-18Z" fill="#d9e3ec"/>
+<path d="M159 366c32-34 68-38 101-9 27 24 55 28 94-2-17 49-52 80-98 102-45-21-78-51-97-91Z" fill="url(#rcWave)"/>
+<path d="M147 389c37-26 75-24 110 5 34 29 67 29 107 3-21 42-55 69-108 92-47-21-83-48-109-100Z" fill="#0d75c7"/>
+</svg>
+<div class="brand-copy">
+  <strong>READY COAST</strong>
+  <div class="prep-line"><i></i><span>PREP</span><i></i></div>
+  <small>PLAN. PREPARE. PROTECT.</small>
+</div>
+</div>
   <div class="top-actions"><button id="printBtn" class="ghost">Print plan</button><button id="installBtn" class="ghost" hidden>Install</button></div>
 </header>
 
@@ -181,6 +197,6 @@
 <dialog id="genericDialog"><form method="dialog" id="genericForm"><div id="dialogFields"></div><div class="button-row"><button value="cancel" class="secondary">Cancel</button><button value="default" class="primary">Save</button></div></form></dialog>
 
 <footer>READY COAST PREP • PREPARE TODAY • PROTECT TOMORROW • STAY READY</footer>
-<script src="app.js?v=4"></script>
+<script src="app.js?v=5"></script>
 </body>
 </html>

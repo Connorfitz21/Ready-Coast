@@ -1,21 +1,3 @@
-// Ready Coast V5 cache recovery
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", async () => {
-    try {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      for (const registration of registrations) {
-        if (registration.active && !registration.active.scriptURL.endsWith("/sw.js")) {
-          await registration.unregister();
-        }
-      }
-      if ("caches" in window) {
-        const keys = await caches.keys();
-        await Promise.all(keys.filter(k => k.startsWith("ready-coast-") && k !== "ready-coast-v5").map(k => caches.delete(k)));
-      }
-    } catch (_) {}
-  });
-}
-
 console.log("Ready Coast V3 loaded");
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const KEY="readyCoastV2";

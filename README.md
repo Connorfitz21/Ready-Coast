@@ -1,15 +1,19 @@
-# Ready Coast Prep V7
+# Ready Coast Prep V8
 
-Upload all files to the root of the GitHub Pages repository. Keep both `CNAME` and `.nojekyll`.
+## Fixed
+- Browser tab favicon now uses the lighthouse shield.
+- Added SVG and PNG favicon declarations with cache version 8.
+- Replaced the app-install icons with the lighthouse shield.
+- The initial setup is explicitly optional.
+- Added a visible `Skip for now` button.
+- Added a top-right close button.
+- Pressing Escape also skips and closes the setup.
+- The dashboard keeps a `Finish household setup` button so users can return later.
+- Setup controls remain visible on shorter screens.
 
-## Major changes
-- Guided four-step household setup
-- Score starts at 0 rather than awarding points for default form values
-- Transparent 0–100 weighted score
-- Concrete water and food day estimates
-- Highest-impact next actions with potential point gains
-- Human-readable readiness status
-- In-app methodology and limitations
-- Evidence-informed minimum planning baselines
+Upload all files to the repository root, including `CNAME`, `.nojekyll`, and `favicon-32.png`.
 
-Open `https://readycoastprep.com/?v=7` after deployment.
+After deployment, open:
+https://readycoastprep.com/?v=8
+
+For the browser tab icon, fully close the old tab and open a new tab after deployment. Browsers often cache favicons longer than page content.

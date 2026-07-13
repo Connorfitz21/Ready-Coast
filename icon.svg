@@ -1,1 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#12372a"/><path d="M76 335c54-7 83-44 115-93 18-27 36-68 67-89 34 31 49 81 82 111 28 25 54 38 96 44v72H76z" fill="#dbc99f"/><path d="M72 359c71-29 119-14 168 10 60 30 118 25 200-20v65H72z" fill="#4f8b72"/><path d="M255 97l22 45-22 44-22-44z" fill="#fff"/><circle cx="255" cy="142" r="11" fill="#12372a"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+  <linearGradient id="wave" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#39a9ff"/>
+    <stop offset="1" stop-color="#0866b2"/>
+  </linearGradient>
+</defs>
+<rect width="512" height="512" rx="112" fill="#061525"/>
+<path d="M256 34 423 97v130c0 111-65 195-167 243C154 422 89 338 89 227V97Z" fill="#061525" stroke="#f5f8fb" stroke-width="18" stroke-linejoin="round"/>
+<path d="M134 160 228 180v-36l-94-22Z" fill="#f7b92f"/>
+<path d="M378 160 284 180v-36l94-22Z" fill="#f7b92f"/>
+<path d="M222 153h68l-8 48h-52Z" fill="#f5f8fb"/>
+<path d="M240 113h32l17 23h-66Z" fill="#f5f8fb"/>
+<rect x="234" y="160" width="44" height="29" rx="4" fill="#061525"/>
+<path d="M231 201h50l25 160H206Z" fill="#f5f8fb"/>
+<path d="M248 213h16v126h-16Z" fill="#d9e3ec"/>
+<path d="M160 355c31-32 65-36 96-9 26 23 53 27 90-2-16 47-49 77-90 98-43-20-75-49-96-87Z" fill="url(#wave)"/>
+<path d="M149 379c35-25 72-23 105 5 33 28 64 28 103 3-20 40-53 66-103 88-45-20-79-46-105-96Z" fill="#0d75c7"/>
+</svg>

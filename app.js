@@ -1,6 +1,6 @@
 console.log("Ready Coast V3 loaded");
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const KEY="readyCoastV7";
+const KEY="readyCoastV8";
 const CATS=["Water & Food","Medical & Safety","Power & Communication","Shelter & Clothing","Documents & Cash","Sanitation","Pets","Tools","Other"];
 const DEFAULT_INV=[
 {id:"i1",name:"Drinking water",category:"Water & Food",qty:0,target:7,unit:"gallons",location:"",expiry:""},
@@ -119,6 +119,10 @@ function evacCompletion(){const c=scoreModel().categories.find(x=>x.key==="evacu
 function overallScore(){return scoreModel().total}
 function renderDashboard(){
  const model=scoreModel(),score=model.total,people=Math.max(1,householdPeople());
+ const setupButton=$("#setupBtn");
+ if(setupButton){
+  setupButton.textContent=data.onboardingComplete?"Review household setup":"Finish household setup";
+ }
  $("#scoreValue").textContent=score;
 
  const water=+((invByName("Drinking water")?.qty)||0);
@@ -277,7 +281,15 @@ function fillOnboarding(){
  f.elements.hasPowerBanks.checked=+((invByName("Phone power banks")?.qty)||0)>=1;
  f.elements.hasCash.checked=+((invByName("Cash in small bills")?.qty)||0)>=1;
 }
-function openOnboarding(){fillOnboarding();setOnboardingStep(1);$("#onboardingDialog").showModal()}
+function openOnboarding(){
+ fillOnboarding();
+ setOnboardingStep(1);
+ $("#onboardingDialog").showModal();
+}
+$("#onboardingDialog").addEventListener("cancel",e=>{
+ e.preventDefault();
+ dismissOnboarding();
+});
 $("#setupBtn").onclick=openOnboarding;
 $("#onboardingBack").onclick=()=>setOnboardingStep(onboardingStep-1);
 $("#onboardingNext").onclick=()=>{
@@ -290,7 +302,14 @@ $("#onboardingNext").onclick=()=>{
  }
  setOnboardingStep(onboardingStep+1);
 };
-$("#onboardingSkip").onclick=()=>{data.onboardingDismissed=true;localStorage.setItem(KEY,JSON.stringify(data));$("#onboardingDialog").close()};
+function dismissOnboarding(){
+ data.onboardingDismissed=true;
+ localStorage.setItem(KEY,JSON.stringify(data));
+ $("#onboardingDialog").close();
+ renderDashboard();
+}
+$("#onboardingSkip").onclick=dismissOnboarding;
+$("#onboardingClose").onclick=dismissOnboarding;
 $("#onboardingForm").onsubmit=e=>{
  e.preventDefault();const f=e.target;
  Object.assign(data.household,{

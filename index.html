@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#061525">
 <meta name="description" content="Ready Coast is a private, offline-capable emergency preparedness planner.">
-<link rel="manifest" href="manifest.webmanifest?v=6">
+<link rel="manifest" href="manifest.webmanifest?v=7">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link rel="stylesheet" href="styles.css?v=6">
+<link rel="stylesheet" href="styles.css?v=7">
 <title>Ready Coast Prep</title>
 </head>
 <body>
@@ -51,25 +51,44 @@
       <p class="eyebrow">PRIVATE • FREE • OFFLINE-CAPABLE</p>
       <h1>Plan. Prepare. Protect.</h1>
       <p>Everything you need to build a plan, prepare your household, and protect what matters most.</p>
-      <div class="button-row"><button class="primary" data-jump="household">Set up household</button><button class="secondary" data-jump="inventory">Add supplies</button></div>
+      <div class="button-row"><button class="primary" id="setupBtn">Start 2-minute setup</button><button class="secondary" data-jump="inventory">Update supplies</button></div>
     </div>
-    <div class="readiness-ring"><div><b id="scoreValue">0</b><span>readiness score</span></div></div>
+    <div class="readiness-ring">
+      <div>
+        <b><span id="scoreValue">0</span><small>/100</small></b>
+        <span>household readiness</span>
+        <button id="scoreInfoBtn" class="score-link" type="button">How this is calculated</button>
+      </div>
+    </div>
   </div>
 
   <div class="metric-grid">
-    <article class="card metric"><span>Household profile</span><b id="profileMetric">0%</b></article>
-    <article class="card metric"><span>Inventory coverage</span><b id="inventoryMetric">0%</b></article>
-    <article class="card metric"><span>Hazard plans</span><b id="hazardMetric">0</b></article>
-    <article class="card metric"><span>Items expiring soon</span><b id="expiryMetric">0</b></article>
+    <article class="card metric"><span>Water available</span><b id="waterDaysMetric">0 days</b><small id="waterNeedMetric">Complete setup to calculate</small></article>
+    <article class="card metric"><span>Food available</span><b id="foodDaysMetric">0 days</b><small id="foodNeedMetric">Complete setup to calculate</small></article>
+    <article class="card metric"><span>Plan status</span><b id="planMetric">Not started</b><small>Communication and evacuation</small></article>
+    <article class="card metric"><span>Needs attention</span><b id="attentionMetric">0</b><small>Low, missing, or expired items</small></article>
   </div>
+
+  <article class="card situation-card">
+    <div>
+      <p class="eyebrow dark">YOUR CURRENT POSITION</p>
+      <h2 id="readinessMessage">Complete the setup to receive a household-specific baseline.</h2>
+      <p id="readinessDetail">Ready Coast will calculate concrete shortages, not just show a generic checklist.</p>
+    </div>
+    <div class="situation-facts">
+      <div><span>Minimum planning horizon</span><b>3 days</b></div>
+      <div><span>Stronger home target</span><b>14 days</b></div>
+      <div><span>Score scale</span><b>0–100</b></div>
+    </div>
+  </article>
 
   <div class="two-col">
     <article class="card">
-      <div class="card-head"><div><p class="eyebrow dark">PRIORITIES</p><h2>Next best actions</h2></div></div>
+      <div class="card-head"><div><p class="eyebrow dark">PRIORITIES</p><h2>Your highest-impact actions</h2></div></div>
       <div id="priorityList" class="stack"></div>
     </article>
     <article class="card">
-      <div class="card-head"><div><p class="eyebrow dark">COVERAGE</p><h2>Core readiness areas</h2></div></div>
+      <div class="card-head"><div><p class="eyebrow dark">COVERAGE</p><h2>Where your score comes from</h2></div></div>
       <div id="coverageBars"></div>
     </article>
   </div>
@@ -186,6 +205,24 @@
     <a class="card resource" href="https://www.redcross.org/get-help/how-to-prepare-for-emergencies.html" target="_blank" rel="noopener"><span>RED CROSS</span><h2>Preparedness guidance</h2><p>Emergency planning by hazard.</p></a>
     <a class="card resource" href="https://www.floodsmart.gov/" target="_blank" rel="noopener"><span>FEMA</span><h2>FloodSmart</h2><p>Flood risk and insurance information.</p></a>
   </div>
+  <article class="card methodology-card" id="methodology">
+    <p class="eyebrow dark">SCORING METHOD</p>
+    <h2>A transparent, evidence-informed score</h2>
+    <p>The score is a planning aid, not a prediction of survival and not a scientifically validated clinical or risk instrument. It converts established public preparedness guidance into visible household actions.</p>
+    <div class="method-grid">
+      <div><b>20 points</b><span>Water</span><small>Three-day minimum at one gallon per person per day.</small></div>
+      <div><b>15 points</b><span>Food</span><small>Three days of nonperishable meals.</small></div>
+      <div><b>15 points</b><span>Medical & safety</span><small>First aid, medications planning, and individual needs.</small></div>
+      <div><b>10 points</b><span>Communication</span><small>Contacts, meeting locations, and warning access.</small></div>
+      <div><b>10 points</b><span>Power & lighting</span><small>Lighting, charging, and outage planning.</small></div>
+      <div><b>10 points</b><span>Evacuation</span><small>Destinations, routes, transportation, and go-bags.</small></div>
+      <div><b>10 points</b><span>Documents & cash</span><small>Critical records and accessible emergency funds.</small></div>
+      <div><b>5 points</b><span>Hazard actions</span><small>Actions selected for hazards relevant to the household.</small></div>
+      <div><b>5 points</b><span>Household needs</span><small>Pets, accessibility, medical needs, and utilities reviewed.</small></div>
+    </div>
+    <p class="fineprint">The app awards points only for information or supplies the user records. It does not verify condition, accessibility, training, or real-world performance.</p>
+  </article>
+
   <article class="card data-tools">
     <h2>Data and backups</h2>
     <div class="button-row"><button id="exportBtn" class="primary">Export full backup</button><label class="secondary file-label">Import backup<input id="importInput" type="file" accept=".json,application/json"></label><button id="resetBtn" class="danger">Reset all data</button></div>
@@ -194,9 +231,90 @@
 </section>
 </main>
 
+<dialog id="onboardingDialog" class="onboarding-dialog">
+  <form id="onboardingForm">
+    <div class="onboarding-progress"><i id="onboardingProgress"></i></div>
+
+    <section class="onboarding-step active" data-step="1">
+      <p class="eyebrow dark">STEP 1 OF 4</p>
+      <h2>Who are you preparing for?</h2>
+      <p>This establishes your minimum water and food requirements.</p>
+      <label>Household name<input name="name" placeholder="Example: Taylor household" required></label>
+      <div class="form-grid two">
+        <label>Adults<input name="adults" type="number" min="0" max="30" value="1" required></label>
+        <label>Children<input name="children" type="number" min="0" max="20" value="0" required></label>
+      </div>
+      <div class="form-grid two">
+        <label>Older adults<input name="seniors" type="number" min="0" max="20" value="0"></label>
+        <label>Pets<input name="pets" type="number" min="0" max="20" value="0"></label>
+      </div>
+    </section>
+
+    <section class="onboarding-step" data-step="2">
+      <p class="eyebrow dark">STEP 2 OF 4</p>
+      <h2>Does anyone need additional planning?</h2>
+      <p>Emergency plans should account for medications, mobility, powered medical devices, pregnancy, infants, and other individual needs.</p>
+      <label class="choice-row"><input type="checkbox" name="hasMedicalNeeds"><span>Prescription medications, medical equipment, or health needs</span></label>
+      <label class="choice-row"><input type="checkbox" name="hasAccessNeeds"><span>Mobility, sensory, communication, or accessibility needs</span></label>
+      <label>Important planning notes<textarea name="needs" rows="4" placeholder="Optional. This stays in your browser."></textarea></label>
+    </section>
+
+    <section class="onboarding-step" data-step="3">
+      <p class="eyebrow dark">STEP 3 OF 4</p>
+      <h2>Which hazards concern you?</h2>
+      <p>Choose what is relevant. Your dashboard will emphasize these scenarios.</p>
+      <div class="hazard-choices">
+        <label><input type="checkbox" name="hazard" value="Hurricane"><span>Hurricane</span></label>
+        <label><input type="checkbox" name="hazard" value="Flood"><span>Flood</span></label>
+        <label><input type="checkbox" name="hazard" value="Power Outage"><span>Power outage</span></label>
+        <label><input type="checkbox" name="hazard" value="Tornado"><span>Tornado</span></label>
+        <label><input type="checkbox" name="hazard" value="Wildfire"><span>Wildfire</span></label>
+        <label><input type="checkbox" name="hazard" value="Winter Storm"><span>Winter storm</span></label>
+        <label><input type="checkbox" name="hazard" value="Earthquake"><span>Earthquake</span></label>
+        <label><input type="checkbox" name="hazard" value="Extreme Heat"><span>Extreme heat</span></label>
+      </div>
+    </section>
+
+    <section class="onboarding-step" data-step="4">
+      <p class="eyebrow dark">STEP 4 OF 4</p>
+      <h2>What do you have right now?</h2>
+      <p>Rough numbers are fine. You can refine them later.</p>
+      <div class="form-grid two">
+        <label>Gallons of stored water<input name="waterQty" type="number" min="0" step="0.5" value="0"></label>
+        <label>Shelf-stable meals<input name="foodQty" type="number" min="0" value="0"></label>
+      </div>
+      <div class="quick-checks">
+        <label class="choice-row"><input type="checkbox" name="hasFirstAid"><span>First-aid kit</span></label>
+        <label class="choice-row"><input type="checkbox" name="hasFlashlights"><span>Working flashlights</span></label>
+        <label class="choice-row"><input type="checkbox" name="hasRadio"><span>Battery or hand-crank radio</span></label>
+        <label class="choice-row"><input type="checkbox" name="hasPowerBanks"><span>Charged phone power banks</span></label>
+        <label class="choice-row"><input type="checkbox" name="hasCash"><span>Emergency cash</span></label>
+      </div>
+    </section>
+
+    <div class="onboarding-actions">
+      <button type="button" id="onboardingBack" class="secondary" hidden>Back</button>
+      <button type="button" id="onboardingSkip" class="text-button">Do this later</button>
+      <button type="button" id="onboardingNext" class="primary">Continue</button>
+      <button type="submit" id="onboardingFinish" class="primary" hidden>Build my baseline</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="scoreDialog" class="score-dialog">
+  <div class="dialog-content">
+    <p class="eyebrow dark">READINESS SCORE</p>
+    <h2>Your score is out of 100</h2>
+    <p>It begins at zero until you complete setup because Ready Coast should not assume that a default household profile represents real preparedness.</p>
+    <div id="scoreBreakdown" class="score-breakdown"></div>
+    <p class="fineprint">The score measures recorded planning actions and supplies. It does not guarantee safety or replace official instructions, training, maintenance, or professional advice.</p>
+    <button id="closeScoreDialog" class="primary" type="button">Close</button>
+  </div>
+</dialog>
+
 <dialog id="genericDialog"><form method="dialog" id="genericForm"><div id="dialogFields"></div><div class="button-row"><button value="cancel" class="secondary">Cancel</button><button value="default" class="primary">Save</button></div></form></dialog>
 
 <footer>Ready Coast stores data locally in this browser unless you export a backup.</footer>
-<script src="app.js?v=6"></script>
+<script src="app.js?v=7"></script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 {
   "name": "Ready Coast Prep",
   "short_name": "Ready Coast",
-  "description": "Private, offline-capable emergency preparedness planning.",
+  "description": "Evidence-informed household emergency preparedness planning and progress tracking.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#061525",

@@ -1,6 +1,6 @@
 console.log("Ready Coast V3 loaded");
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const KEY="readyCoastV2";
+const KEY="readyCoastV7";
 const CATS=["Water & Food","Medical & Safety","Power & Communication","Shelter & Clothing","Documents & Cash","Sanitation","Pets","Tools","Other"];
 const DEFAULT_INV=[
 {id:"i1",name:"Drinking water",category:"Water & Food",qty:0,target:7,unit:"gallons",location:"",expiry:""},
@@ -22,7 +22,11 @@ const HAZARDS={
 "Earthquake":["Secure heavy furniture and appliances","Identify safe drop-cover-hold locations","Store sturdy shoes near beds","Know utility shutoff procedures","Keep supplies accessible","Plan family communication","Expect aftershocks","Review structural concerns with qualified professionals"],
 "Extreme Heat":["Identify air-conditioned locations","Store drinking water","Plan wellness checks for vulnerable people","Review medication heat sensitivity","Limit strenuous activity during peak heat","Prepare for power outages","Never leave people or pets in vehicles"]
 };
-function defaultData(){return{household:{name:"",area:"",adults:1,children:0,seniors:0,pets:0,needs:"",utilities:""},contacts:[],records:[],inventory:structuredClone(DEFAULT_INV),hazards:{},evac:{},calculator:{people:1,pets:0,days:7},selectedHazard:"Hurricane"}}
+function defaultData(){return{
+ household:{name:"",area:"",adults:0,children:0,seniors:0,pets:0,needs:"",utilities:"",hasMedicalNeeds:false,hasAccessNeeds:false},
+ contacts:[],records:[],inventory:structuredClone(DEFAULT_INV),hazards:{},selectedHazards:[],evac:{},
+ calculator:{people:1,pets:0,days:7},selectedHazard:"Hurricane",onboardingComplete:false,onboardingDismissed:false
+}}
 let data=load();
 function load(){try{const p=JSON.parse(localStorage.getItem(KEY));if(p?.inventory)return p}catch(e){}return defaultData()}
 function save(){localStorage.setItem(KEY,JSON.stringify(data));renderAll()}
@@ -33,26 +37,159 @@ function pct(n,d){return d?Math.round(n/d*100):0}
 function navigate(id){$$(".view").forEach(v=>v.classList.toggle("active",v.id===id));$$(".tabs button").forEach(b=>b.classList.toggle("active",b.dataset.view===id));scrollTo({top:0,behavior:"smooth"})}
 $$(".tabs button").forEach(b=>b.onclick=()=>navigate(b.dataset.view));$$("[data-jump]").forEach(b=>b.onclick=()=>navigate(b.dataset.jump));$("#printBtn").onclick=()=>print();
 
-function householdCompletion(){const fields=["name","adults","area","needs","utilities"];return pct(fields.filter(k=>String(data.household[k]??"").trim()!=="").length,fields.length)}
-function inventoryCoverage(){const required=data.inventory.filter(i=>i.target>0);return pct(required.filter(i=>+i.qty>=+i.target).length,required.length)}
-function hazardCompletion(){let done=0,total=0;Object.entries(HAZARDS).forEach(([h,items])=>{if(data.hazards[h]){total+=items.length;done+=Object.values(data.hazards[h]).filter(Boolean).length}});return pct(done,total)}
-function evacCompletion(){const keys=["homeMeeting","neighborhoodMeeting","primaryDestination","backupDestination","primaryRoute","transport"];return pct(keys.filter(k=>(data.evac[k]||"").trim()).length,keys.length)}
-function overallScore(){return Math.round((householdCompletion()+inventoryCoverage()+hazardCompletion()+evacCompletion())/4)}
+function householdPeople(){
+ return Math.max(0,(+data.household.adults||0)+(+data.household.children||0)+(+data.household.seniors||0));
+}
+function invByName(name){return data.inventory.find(i=>i.name===name)}
+function ratio(value,target){return target>0?Math.max(0,Math.min(1,(+value||0)/target)):0}
+function truthyCount(values){return values.filter(Boolean).length}
+
+function scoreModel(){
+ if(!data.onboardingComplete){
+  return {total:0,categories:[
+   {key:"water",name:"Water",weight:20,earned:0},
+   {key:"food",name:"Food",weight:15,earned:0},
+   {key:"medical",name:"Medical & safety",weight:15,earned:0},
+   {key:"communication",name:"Communication",weight:10,earned:0},
+   {key:"power",name:"Power & lighting",weight:10,earned:0},
+   {key:"evacuation",name:"Evacuation",weight:10,earned:0},
+   {key:"documents",name:"Documents & cash",weight:10,earned:0},
+   {key:"hazards",name:"Hazard actions",weight:5,earned:0},
+   {key:"needs",name:"Household needs",weight:5,earned:0}
+  ]};
+ }
+ const people=Math.max(1,householdPeople());
+ const water=invByName("Drinking water"), food=invByName("Shelf-stable meals");
+ const waterEarned=20*ratio(water?.qty,people*3);
+ const foodEarned=15*ratio(food?.qty,people*3*3);
+
+ const firstAid=+((invByName("First-aid kit")?.qty)||0)>=1;
+ const medsAddressed=!data.household.hasMedicalNeeds || Boolean((data.household.needs||"").trim());
+ const needsDocumented=Boolean((data.household.needs||"").trim()) || (!data.household.hasMedicalNeeds&&!data.household.hasAccessNeeds);
+ const medicalEarned=15*((firstAid?0.4:0)+(medsAddressed?0.35:0)+(needsDocumented?0.25:0));
+
+ const hasContact=data.contacts.length>0;
+ const meeting=Boolean((data.evac.homeMeeting||"").trim()||(data.evac.neighborhoodMeeting||"").trim());
+ const radio=+((invByName("Weather radio")?.qty)||0)>=1;
+ const communicationEarned=10*((hasContact?0.4:0)+(meeting?0.3:0)+(radio?0.3:0));
+
+ const flashlight=+((invByName("Flashlights")?.qty)||0)>=1;
+ const powerBank=+((invByName("Phone power banks")?.qty)||0)>=1;
+ const outagePlan=Boolean((data.household.utilities||"").trim());
+ const powerEarned=10*((flashlight?0.4:0)+(powerBank?0.3:0)+(outagePlan?0.3:0));
+
+ const evacChecks=[
+  data.evac.primaryDestination,data.evac.backupDestination,data.evac.primaryRoute,
+  data.evac.transport,data.evac.bagLocations
+ ].map(v=>Boolean((v||"").trim()));
+ const evacuationEarned=10*(truthyCount(evacChecks)/evacChecks.length);
+
+ const records=data.records.length>0;
+ const cash=+((invByName("Cash in small bills")?.qty)||0)>=1;
+ const backup=Boolean(localStorage.getItem("readyCoastBackupExported"));
+ const documentsEarned=10*((records?0.45:0)+(cash?0.35:0)+(backup?0.2:0));
+
+ const chosen=data.selectedHazards||[];
+ let hazardDone=0,hazardTotal=0;
+ chosen.forEach(h=>{(HAZARDS[h]||[]).forEach((_,i)=>{hazardTotal++;if(data.hazards[h]?.[i])hazardDone++})});
+ const hazardsEarned=chosen.length?5*(hazardTotal?hazardDone/hazardTotal:0):0;
+
+ const petPlan=(+data.household.pets||0)===0 || Boolean((data.evac.petPlan||"").trim()) || +((invByName("Pet food")?.qty)||0)>0;
+ const accessReviewed=!data.household.hasAccessNeeds || Boolean((data.household.needs||"").trim());
+ const utilitiesReviewed=Boolean((data.household.utilities||"").trim());
+ const needsEarned=5*((petPlan?0.35:0)+(accessReviewed?0.35:0)+(utilitiesReviewed?0.3:0));
+
+ const categories=[
+  {key:"water",name:"Water",weight:20,earned:waterEarned},
+  {key:"food",name:"Food",weight:15,earned:foodEarned},
+  {key:"medical",name:"Medical & safety",weight:15,earned:medicalEarned},
+  {key:"communication",name:"Communication",weight:10,earned:communicationEarned},
+  {key:"power",name:"Power & lighting",weight:10,earned:powerEarned},
+  {key:"evacuation",name:"Evacuation",weight:10,earned:evacuationEarned},
+  {key:"documents",name:"Documents & cash",weight:10,earned:documentsEarned},
+  {key:"hazards",name:"Hazard actions",weight:5,earned:hazardsEarned},
+  {key:"needs",name:"Household needs",weight:5,earned:needsEarned}
+ ];
+ return {total:Math.round(categories.reduce((sum,c)=>sum+c.earned,0)),categories};
+}
+function householdCompletion(){return data.onboardingComplete?100:0}
+function inventoryCoverage(){const m=scoreModel();return Math.round(((m.categories[0].earned+m.categories[1].earned)/(35))*100)}
+function hazardCompletion(){const c=scoreModel().categories.find(x=>x.key==="hazards");return Math.round((c.earned/c.weight)*100)}
+function evacCompletion(){const c=scoreModel().categories.find(x=>x.key==="evacuation");return Math.round((c.earned/c.weight)*100)}
+function overallScore(){return scoreModel().total}
 function renderDashboard(){
- const score=overallScore();$("#scoreValue").textContent=score;$("#profileMetric").textContent=householdCompletion()+"%";$("#inventoryMetric").textContent=inventoryCoverage()+"%";
- const planned=Object.keys(data.hazards).filter(h=>Object.values(data.hazards[h]||{}).some(Boolean)).length;$("#hazardMetric").textContent=planned;
- const exp=data.inventory.filter(i=>{const d=daysUntil(i.expiry);return d>=0&&d<=60}).length;$("#expiryMetric").textContent=exp;
- const priorities=[];
- if(householdCompletion()<60)priorities.push("Complete your household profile and medical considerations.");
- if(inventoryCoverage()<70)priorities.push("Bring core supply quantities closer to target.");
- if(!planned)priorities.push("Select at least one local hazard and complete its checklist.");
- if(evacCompletion()<60)priorities.push("Document primary and backup evacuation plans.");
- if(!data.contacts.length)priorities.push("Add an out-of-area emergency contact.");
- $("#priorityList").innerHTML=(priorities.length?priorities:["Review expiration dates and practice your plan."]).slice(0,5).map((x,i)=>`<div class="priority"><i>${i+1}</i><div>${esc(x)}</div></div>`).join("");
- const cov=[["Household",householdCompletion()],["Inventory",inventoryCoverage()],["Hazards",hazardCompletion()],["Evacuation",evacCompletion()]];
- $("#coverageBars").innerHTML=cov.map(([n,v])=>`<div class="coverage-row"><div><span>${n}</span><b>${v}%</b></div><div class="bar"><i style="width:${v}%"></i></div></div>`).join("");
+ const model=scoreModel(),score=model.total,people=Math.max(1,householdPeople());
+ $("#scoreValue").textContent=score;
+
+ const water=+((invByName("Drinking water")?.qty)||0);
+ const meals=+((invByName("Shelf-stable meals")?.qty)||0);
+ const waterDays=Math.floor((water/people)*10)/10;
+ const foodDays=Math.floor((meals/(people*3))*10)/10;
+ $("#waterDaysMetric").textContent=`${waterDays} day${waterDays===1?"":"s"}`;
+ $("#foodDaysMetric").textContent=`${foodDays} day${foodDays===1?"":"s"}`;
+ $("#waterNeedMetric").textContent=data.onboardingComplete?`${Math.max(0,people*3-water).toFixed(1)} gallons to 3-day minimum`:"Complete setup to calculate";
+ $("#foodNeedMetric").textContent=data.onboardingComplete?`${Math.max(0,people*9-meals)} meals to 3-day minimum`:"Complete setup to calculate";
+
+ const planPieces=[
+  data.contacts.length>0,
+  Boolean((data.evac.homeMeeting||"").trim()||(data.evac.neighborhoodMeeting||"").trim()),
+  Boolean((data.evac.primaryDestination||"").trim()),
+  Boolean((data.evac.primaryRoute||"").trim())
+ ];
+ const planPct=Math.round(truthyCount(planPieces)/planPieces.length*100);
+ $("#planMetric").textContent=!data.onboardingComplete?"Not started":planPct===100?"Ready":planPct>=50?"In progress":"Needs work";
+
+ const attention=data.inventory.filter(i=>["low","expiring","expired"].includes(itemState(i))).length+
+   (data.contacts.length?0:1)+(data.evac.primaryDestination?0:1);
+ $("#attentionMetric").textContent=data.onboardingComplete?attention:0;
+
+ const message=$("#readinessMessage"),detail=$("#readinessDetail");
+ if(!data.onboardingComplete){
+  message.textContent="Complete the setup to receive a household-specific baseline.";
+  detail.textContent="Ready Coast starts at 0 because it should not assume you own supplies or have a plan.";
+ }else if(score<25){
+  message.textContent="Your basic needs are not yet covered for a three-day disruption.";
+  detail.textContent="Start with water, food, medications, lighting, and one emergency contact.";
+ }else if(score<50){
+  message.textContent="You have started, but several critical gaps remain.";
+  detail.textContent="Focus on the highest-point actions below before buying specialized gear.";
+ }else if(score<75){
+  message.textContent="Your household has a useful foundation.";
+  detail.textContent="Strengthen evacuation, communication, and hazard-specific actions.";
+ }else if(score<90){
+  message.textContent="Your recorded plan covers most core preparedness areas.";
+  detail.textContent="Review expiration dates, practice the plan, and work toward a longer home supply.";
+ }else{
+  message.textContent="Your recorded plan is strong across the core categories.";
+  detail.textContent="Maintain supplies, practice regularly, and follow current official instructions during an emergency.";
+ }
+
+ const actionPool=[];
+ const addAction=(text,points,jump,priority)=>actionPool.push({text,points,jump,priority});
+ if(!data.onboardingComplete)addAction("Complete the two-minute household setup",0,"setup",100);
+ else{
+  const waterMissing=Math.max(0,people*3-water);
+  const foodMissing=Math.max(0,people*9-meals);
+  if(waterMissing>0)addAction(`Add ${waterMissing.toFixed(1)} gallons of water to reach the three-day minimum`,Math.ceil(20-model.categories[0].earned),"inventory",98);
+  if(foodMissing>0)addAction(`Add ${Math.ceil(foodMissing)} shelf-stable meals to reach the three-day minimum`,Math.ceil(15-model.categories[1].earned),"inventory",95);
+  if(+((invByName("First-aid kit")?.qty)||0)<1)addAction("Add an accessible first-aid kit",6,"inventory",90);
+  if(data.household.hasMedicalNeeds&&!(data.household.needs||"").trim())addAction("Document medication and medical-equipment needs",5,"household",89);
+  if(!data.contacts.length)addAction("Add an out-of-area emergency contact",4,"household",86);
+  if(+((invByName("Weather radio")?.qty)||0)<1)addAction("Add a battery or hand-crank weather radio",3,"inventory",80);
+  if(+((invByName("Flashlights")?.qty)||0)<1)addAction("Add working flashlights",4,"inventory",78);
+  if(!data.evac.primaryDestination)addAction("Choose a primary evacuation destination",2,"evacuation",75);
+  if(!data.evac.primaryRoute)addAction("Document a primary evacuation route",2,"evacuation",73);
+  if(!data.records.length)addAction("Record where critical documents are stored",5,"household",68);
+ }
+ actionPool.sort((a,b)=>b.priority-a.priority);
+ $("#priorityList").innerHTML=actionPool.length?actionPool.slice(0,5).map((a,i)=>`<button class="priority action-button" data-action-jump="${a.jump}"><i>${i+1}</i><div><b>${esc(a.text)}</b>${a.points?`<small>Up to +${a.points} points</small>`:"<small>Creates your baseline</small>"}</div></button>`).join(""):"<div class='priority'><i>✓</i><div><b>No immediate gaps detected from the information entered.</b><small>Review, maintain, and practice your plan.</small></div></div>";
+ $$("[data-action-jump]").forEach(b=>b.onclick=()=>b.dataset.actionJump==="setup"?openOnboarding():navigate(b.dataset.actionJump));
+
+ $("#coverageBars").innerHTML=model.categories.map(c=>{const categoryPct=Math.round(c.earned/c.weight*100);return `<div class="coverage-row"><div><span>${esc(c.name)}</span><b>${Math.round(c.earned)}/${c.weight}</b></div><div class="bar"><i style="width:${categoryPct}%"></i></div></div>`}).join("");
+
  const upcoming=data.inventory.filter(i=>i.expiry).sort((a,b)=>a.expiry.localeCompare(b.expiry)).slice(0,5);
- $("#upcomingList").innerHTML=upcoming.length?upcoming.map(i=>{const d=daysUntil(i.expiry);return `<div><b>${esc(i.name)}</b><br><small>${d<0?`Expired ${Math.abs(d)} days ago`:d===0?"Expires today":`Expires in ${d} days`} • ${esc(i.location||"No location")}</small></div>`}).join(""):"<div>No expiration dates have been added.</div>";
+ $("#upcomingList").innerHTML=upcoming.length?upcoming.map(i=>{const d=daysUntil(i.expiry);return `<div><b>${esc(i.name)}</b><br><small>${d<0?`Expired ${Math.abs(d)} days ago`:d===0?"Expires today":`Expires in ${d} days`} • ${esc(i.location||"No location")}</small></div>`}).join(""):"<div>No expiration or review dates have been entered.</div>";
+ renderScoreBreakdown();
 }
 function fillHousehold(){Object.entries(data.household).forEach(([k,v])=>{const e=$(`#householdForm [name="${k}"]`);if(e)e.value=v})}
 $("#householdForm").onsubmit=e=>{e.preventDefault();data.household=Object.fromEntries(new FormData(e.target));save();$("#householdStatus").textContent="Saved on this device.";setTimeout(()=>$("#householdStatus").textContent="",2000)}
@@ -112,11 +249,86 @@ Object.entries(data.calculator||{}).forEach(([k,v])=>{const e=$("#calc"+k[0].toU
 function alertCard(a){const p=a.properties||{},sev=["Extreme","Severe"].includes(p.severity);return `<article class="card alert-card ${sev?"severe":""}"><div class="alert-meta"><span class="pill">${esc(p.severity||"Unknown")}</span><span class="pill">${esc(p.urgency||"")}</span></div><h2>${esc(p.event||"Weather alert")}</h2><small>${esc(p.areaDesc||"")}</small><p>${esc((p.headline||p.description||"").slice(0,1600))}</p></article>`}
 $("#locationBtn").onclick=()=>{if(!navigator.geolocation){$("#alertStatus").textContent="Location is not supported.";return}$("#alertStatus").textContent="Requesting location…";navigator.geolocation.getCurrentPosition(async pos=>{try{$("#alertStatus").textContent="Checking active alerts…";const {latitude,longitude}=pos.coords,res=await fetch(`https://api.weather.gov/alerts/active?point=${latitude.toFixed(4)},${longitude.toFixed(4)}`,{headers:{Accept:"application/geo+json"}});if(!res.ok)throw Error();const j=await res.json(),arr=j.features||[];$("#alertStatus").textContent=arr.length?`${arr.length} active alert${arr.length===1?"":"s"} found.`:"No active NWS alerts were returned.";$("#alertList").innerHTML=arr.map(alertCard).join("")}catch(e){$("#alertStatus").textContent="Alerts could not be loaded. Use Weather.gov for official information."}},e=>$("#alertStatus").textContent=e.code===1?"Location permission was not granted.":"Location could not be determined.",{timeout:10000,maximumAge:300000})};
 
-$("#exportBtn").onclick=()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`ready-coast-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(a.href)};
+$("#exportBtn").onclick=()=>{localStorage.setItem("readyCoastBackupExported","true");const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`ready-coast-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(a.href)};
 $("#importInput").onchange=async e=>{try{const j=JSON.parse(await e.target.files[0].text());if(!j.inventory)throw Error();data=j;localStorage.setItem(KEY,JSON.stringify(data));location.reload()}catch(err){alert("That file is not a valid Ready Coast backup.")}e.target.value=""};
 $("#resetBtn").onclick=()=>{if(confirm("Delete all Ready Coast data stored in this browser?")){data=defaultData();localStorage.setItem(KEY,JSON.stringify(data));location.reload()}};
+
+
+let onboardingStep=1;
+function setOnboardingStep(step){
+ onboardingStep=Math.max(1,Math.min(4,step));
+ $$(".onboarding-step").forEach(s=>s.classList.toggle("active",+s.dataset.step===onboardingStep));
+ $("#onboardingProgress").style.width=`${onboardingStep*25}%`;
+ $("#onboardingBack").hidden=onboardingStep===1;
+ $("#onboardingNext").hidden=onboardingStep===4;
+ $("#onboardingFinish").hidden=onboardingStep!==4;
+}
+function fillOnboarding(){
+ const f=$("#onboardingForm");
+ ["name","adults","children","seniors","pets","needs"].forEach(k=>{if(f.elements[k])f.elements[k].value=data.household[k]??""});
+ if(f.elements.hasMedicalNeeds)f.elements.hasMedicalNeeds.checked=Boolean(data.household.hasMedicalNeeds);
+ if(f.elements.hasAccessNeeds)f.elements.hasAccessNeeds.checked=Boolean(data.household.hasAccessNeeds);
+ $$('input[name="hazard"]').forEach(c=>c.checked=(data.selectedHazards||[]).includes(c.value));
+ const water=invByName("Drinking water"),food=invByName("Shelf-stable meals");
+ f.elements.waterQty.value=water?.qty||0;f.elements.foodQty.value=food?.qty||0;
+ f.elements.hasFirstAid.checked=+((invByName("First-aid kit")?.qty)||0)>=1;
+ f.elements.hasFlashlights.checked=+((invByName("Flashlights")?.qty)||0)>=1;
+ f.elements.hasRadio.checked=+((invByName("Weather radio")?.qty)||0)>=1;
+ f.elements.hasPowerBanks.checked=+((invByName("Phone power banks")?.qty)||0)>=1;
+ f.elements.hasCash.checked=+((invByName("Cash in small bills")?.qty)||0)>=1;
+}
+function openOnboarding(){fillOnboarding();setOnboardingStep(1);$("#onboardingDialog").showModal()}
+$("#setupBtn").onclick=openOnboarding;
+$("#onboardingBack").onclick=()=>setOnboardingStep(onboardingStep-1);
+$("#onboardingNext").onclick=()=>{
+ const section=$(`.onboarding-step[data-step="${onboardingStep}"]`);
+ const required=[...section.querySelectorAll("[required]")];
+ if(required.some(el=>!el.reportValidity()))return;
+ if(onboardingStep===1){
+  const f=$("#onboardingForm"),people=(+f.elements.adults.value||0)+(+f.elements.children.value||0)+(+f.elements.seniors.value||0);
+  if(people<1){alert("Enter at least one person in the household.");return}
+ }
+ setOnboardingStep(onboardingStep+1);
+};
+$("#onboardingSkip").onclick=()=>{data.onboardingDismissed=true;localStorage.setItem(KEY,JSON.stringify(data));$("#onboardingDialog").close()};
+$("#onboardingForm").onsubmit=e=>{
+ e.preventDefault();const f=e.target;
+ Object.assign(data.household,{
+  name:f.elements.name.value.trim(),
+  adults:+f.elements.adults.value||0,children:+f.elements.children.value||0,
+  seniors:+f.elements.seniors.value||0,pets:+f.elements.pets.value||0,
+  needs:f.elements.needs.value.trim(),
+  hasMedicalNeeds:f.elements.hasMedicalNeeds.checked,
+  hasAccessNeeds:f.elements.hasAccessNeeds.checked
+ });
+ data.selectedHazards=$$('input[name="hazard"]:checked').map(c=>c.value);
+ if(data.selectedHazards.length)data.selectedHazard=data.selectedHazards[0];
+ const setInv=(name,qty)=>{const item=invByName(name);if(item)item.qty=qty};
+ setInv("Drinking water",+f.elements.waterQty.value||0);
+ setInv("Shelf-stable meals",+f.elements.foodQty.value||0);
+ setInv("First-aid kit",f.elements.hasFirstAid.checked?1:0);
+ setInv("Flashlights",f.elements.hasFlashlights.checked?2:0);
+ setInv("Weather radio",f.elements.hasRadio.checked?1:0);
+ setInv("Phone power banks",f.elements.hasPowerBanks.checked?2:0);
+ setInv("Cash in small bills",f.elements.hasCash.checked?1:0);
+ const people=Math.max(1,householdPeople());
+ const water=invByName("Drinking water"),food=invByName("Shelf-stable meals");
+ if(water)water.target=people*3;
+ if(food)food.target=people*9;
+ const petFood=invByName("Pet food");if(petFood)petFood.target=(+data.household.pets||0)>0?3:0;
+ data.calculator={people,pets:+data.household.pets||0,days:7};
+ data.onboardingComplete=true;data.onboardingDismissed=false;
+ localStorage.setItem(KEY,JSON.stringify(data));
+ $("#onboardingDialog").close();fillHousehold();fillEvac();renderAll();updateCalculators();if(!data.onboardingComplete&&!data.onboardingDismissed)setTimeout(openOnboarding,350);
+};
+function renderScoreBreakdown(){
+ const model=scoreModel();
+ $("#scoreBreakdown").innerHTML=model.categories.map(c=>`<div><span>${esc(c.name)}</span><div class="mini-bar"><i style="width:${Math.round(c.earned/c.weight*100)}%"></i></div><b>${Math.round(c.earned)} / ${c.weight}</b></div>`).join("");
+}
+$("#scoreInfoBtn").onclick=()=>{$("#scoreDialog").showModal();renderScoreBreakdown()};
+$("#closeScoreDialog").onclick=()=>$("#scoreDialog").close();
 
 let deferredPrompt;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferredPrompt=e;$("#installBtn").hidden=false});$("#installBtn").onclick=async()=>{if(!deferredPrompt)return;deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;$("#installBtn").hidden=true};if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));
 
 function renderAll(){renderDashboard();renderContacts();renderRecords();renderInventory();renderHazards()}
-fillHousehold();fillEvac();renderAll();updateCalculators();
+fillHousehold();fillEvac();renderAll();updateCalculators();if(!data.onboardingComplete&&!data.onboardingDismissed)setTimeout(openOnboarding,350);

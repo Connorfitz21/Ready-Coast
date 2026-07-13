@@ -1,10 +1,15 @@
-# Ready Coast Prep V6
+# Ready Coast Prep V7
 
-This ZIP includes the two GitHub Pages deployment files that were previously missing:
+Upload all files to the root of the GitHub Pages repository. Keep both `CNAME` and `.nojekyll`.
 
-- `CNAME`, containing `readycoastprep.com`
-- `.nojekyll`
+## Major changes
+- Guided four-step household setup
+- Score starts at 0 rather than awarding points for default form values
+- Transparent 0–100 weighted score
+- Concrete water and food day estimates
+- Highest-impact next actions with potential point gains
+- Human-readable readiness status
+- In-app methodology and limitations
+- Evidence-informed minimum planning baselines
 
-Upload every extracted file to the repository root. Do not omit files whose names begin with a period.
-
-After GitHub Pages redeploys, verify that the repository root visibly contains `CNAME`.
+Open `https://readycoastprep.com/?v=7` after deployment.
